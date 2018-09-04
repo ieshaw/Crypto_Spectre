@@ -14,34 +14,36 @@ def load_credentials(json_path,key_name):
     key_dict = secrets[key_name]
     return key_dict['email'],key_dict['password']
 
-def send_gmail(msg,subj,to_addrs,from_addr,password):
+def send_gmail(body,subj,to_addrs,from_addr,password):
     '''
-    :param msg: string, body of email
+    :param body: string, body of email
     :param subj: string, subject of email
     :param toaddrs: list of strings, addresses of email recipients
     :param from_addr: string, sender email address
     :param password: password of sender
     '''
     # put your host and port here
+    # Import the email modules we'll need
+    from email.mime.text import MIMEText
+
+    msg = MIMEText(body)
+
+    msg['Subject'] = subj 
+    msg['From'] = from_addr
+    msg['To'] = ', '.join(to_addrs)
+
     s = smtplib.SMTP_SSL('smtp.gmail.com',465)
     s.login(from_addr, password)
-    email_text = """  
-    From: %s \r\n 
-    To: %s  \r\n
-    Subject: %s \r\n
-
-    %s
-    """ % (from_addr, ", ".join(to_addrs), subj, msg)
-    s.sendmail(from_addr, to_addrs, email_text)
+    s.send_message(msg)
     s.quit()
 
-def send_email(json_path,key_name,msg,subj,to_addrs):
+def send_email(json_path,key_name,body,subj,to_addrs):
     '''
     :param json_path: dictionary
     :param key_name: string
-    :param msg: string, body of email
+    :param body: string, body of email
     :param subj: string, subject of email
     :param toaddrs: list of strings, addresses of email recipients
     '''
     from_addr,password = load_credentials(json_path,key_name)
-    send_gmail(msg,subj,to_addrs,from_addr,password)
+    send_gmail(body,subj,to_addrs,from_addr,password)
